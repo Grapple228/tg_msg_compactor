@@ -368,22 +368,6 @@ fn esc(s: &str) -> String {
     out
 }
 
-/// Unix-время в base36 (7 символов вместо 10).
-fn to_base36(mut n: u64) -> String {
-    if n == 0 {
-        return "0".into();
-    }
-    const AL: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyz";
-    let mut buf = [0u8; 13];
-    let mut i = buf.len();
-    while n > 0 {
-        i -= 1;
-        buf[i] = AL[(n % 36) as usize];
-        n /= 36;
-    }
-    String::from_utf8(buf[i..].to_vec()).unwrap()
-}
-
 fn kv<V: AsRef<str>>(key: &str, val: Option<V>) -> Option<String> {
     val.and_then(|v| {
         let s = v.as_ref();
@@ -472,7 +456,7 @@ fn compact_line(m: &Message, index: &HashMap<String, usize>) -> String {
                 c.message_id
                     .map(|v| v.to_string())
                     .unwrap_or_else(|| c.id.to_string()),
-                to_base36(c.date_unixtime.parse().unwrap_or(0)),
+                c.date_unixtime.clone(),
                 "t".to_string(),
                 build_extras(c, &[]),
                 c.text.clone(),
@@ -488,7 +472,7 @@ fn compact_line(m: &Message, index: &HashMap<String, usize>) -> String {
                 c.message_id
                     .map(|v| v.to_string())
                     .unwrap_or_else(|| c.id.to_string()),
-                to_base36(c.date_unixtime.parse().unwrap_or(0)),
+                c.date_unixtime.clone(),
                 "p".to_string(),
                 build_extras(c, &extra),
                 c.text.clone(),
@@ -506,7 +490,7 @@ fn compact_line(m: &Message, index: &HashMap<String, usize>) -> String {
                 c.message_id
                     .map(|v| v.to_string())
                     .unwrap_or_else(|| c.id.to_string()),
-                to_base36(c.date_unixtime.parse().unwrap_or(0)),
+                c.date_unixtime.clone(),
                 "v".to_string(),
                 build_extras(c, &extra),
                 c.text.clone(),
@@ -523,7 +507,7 @@ fn compact_line(m: &Message, index: &HashMap<String, usize>) -> String {
                 c.message_id
                     .map(|v| v.to_string())
                     .unwrap_or_else(|| c.id.to_string()),
-                to_base36(c.date_unixtime.parse().unwrap_or(0)),
+                c.date_unixtime.clone(),
                 "s".to_string(),
                 build_extras(c, &extra),
                 c.text.clone(),
@@ -542,7 +526,7 @@ fn compact_line(m: &Message, index: &HashMap<String, usize>) -> String {
                 c.message_id
                     .map(|v| v.to_string())
                     .unwrap_or_else(|| c.id.to_string()),
-                to_base36(c.date_unixtime.parse().unwrap_or(0)),
+                c.date_unixtime.clone(),
                 "f".to_string(),
                 build_extras(c, &extra),
                 c.text.clone(),
@@ -559,7 +543,7 @@ fn compact_line(m: &Message, index: &HashMap<String, usize>) -> String {
                 c.message_id
                     .map(|v| v.to_string())
                     .unwrap_or_else(|| c.id.to_string()),
-                to_base36(c.date_unixtime.parse().unwrap_or(0)),
+                c.date_unixtime.clone(),
                 "sv".to_string(),
                 build_extras(c, &extra),
                 c.text.clone(),
@@ -579,13 +563,7 @@ fn compact_line(m: &Message, index: &HashMap<String, usize>) -> String {
                 r.message_id
                     .map(|v| v.to_string())
                     .unwrap_or_else(|| r.id.to_string()),
-                to_base36(
-                    r.date_unixtime
-                        .clone()
-                        .unwrap_or_default()
-                        .parse()
-                        .unwrap_or(0),
-                ),
+                r.date_unixtime.clone().unwrap_or_default(),
                 "u".to_string(),
                 build_extras_raw(r, extra),
                 r.text.clone(),
